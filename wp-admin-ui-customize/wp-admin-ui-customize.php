@@ -871,7 +871,7 @@ class WP_Admin_UI_Customize
 		if ( is_object( $menu_widget ) ) $menu_widget = (array) $menu_widget;
 		if( !isset( $menu_widget["group"] ) ) $menu_widget["group"] = 0;
 		if( !isset( $menu_widget["meta"]["class"] ) ) $menu_widget["meta"]["class"] = "";
-		$no_submenu = array( 'search' , 'bp-notifications' , 'languages' , 'menu-toggle' , 'post_list' , 'page_list' , 'vaa' );
+		$no_submenu = array( 'search' , 'bp-notifications' , 'languages' , 'menu-toggle' , 'post_list' , 'page_list' );
 
 		/**
 		 * Add items to the "no_submenu" array.
