@@ -1427,7 +1427,14 @@ class WP_Admin_UI_Customize
 				}
 			}
 
-			$Record = apply_filters( 'wauc_pre_update' , $this->Record["site"] );
+			/**
+			 * Change the update data.
+			 * @since  1.5.11  Added second context parameter.
+			 * @param  mixed   $record   Update data.
+			 * @param  string  $context  The data name of what is being updated.
+			 * @return mixed
+			 */
+			$Record = apply_filters( 'wauc_pre_update' , $this->Record["site"], 'site' );
 			update_option( $Record , $Update );
 			wp_redirect( esc_url_raw( add_query_arg( $this->MsgQ , 'update' , stripslashes( $_POST["_wp_http_referer"] ) ) ) );
 			exit;
@@ -1447,7 +1454,10 @@ class WP_Admin_UI_Customize
 				}
 			}
 
-			$Record = apply_filters( 'wauc_pre_update' , $this->Record["admin_general"] );
+			/**
+			 * Filter documented in WP_Admin_UI_Customize::update_site().
+			 */
+			$Record = apply_filters( 'wauc_pre_update' , $this->Record["admin_general"], 'admin_general' );
 			update_option( $Record , $Update );
 			wp_redirect( esc_url_raw( add_query_arg( $this->MsgQ , 'update' , stripslashes( $_POST["_wp_http_referer"] ) ) ) );
 			exit;
@@ -1467,7 +1477,10 @@ class WP_Admin_UI_Customize
 				}
 			}
 
-			$Record = apply_filters( 'wauc_pre_update' , $this->Record["dashboard"] );
+			/**
+			 * Filter documented in WP_Admin_UI_Customize::update_site().
+			 */
+			$Record = apply_filters( 'wauc_pre_update' , $this->Record["dashboard"], 'dashboard' );
 			update_option( $Record , $Update );
 			wp_redirect( esc_url_raw( add_query_arg( $this->MsgQ , 'update' , stripslashes( $_POST["_wp_http_referer"] ) ) ) );
 			exit;
@@ -1522,7 +1535,10 @@ class WP_Admin_UI_Customize
 				}
 			}
 
-			$Record = apply_filters( 'wauc_pre_update' , $this->Record["admin_bar_menu"] );
+			/**
+			 * Filter documented in WP_Admin_UI_Customize::update_site().
+			 */
+			$Record = apply_filters( 'wauc_pre_update' , $this->Record["admin_bar_menu"], 'admin_bar_menu' );
 			update_option( $Record , $Update );
 			wp_redirect( esc_url_raw( add_query_arg( $this->MsgQ , 'update' , stripslashes( $_POST["_wp_http_referer"] ) ) ) );
 			exit;
@@ -1552,7 +1568,10 @@ class WP_Admin_UI_Customize
 				}
 			}
 
-			$Record = apply_filters( 'wauc_pre_update' , $this->Record["sidemenu"] );
+			/**
+			 * Filter documented in WP_Admin_UI_Customize::update_site().
+			 */
+			$Record = apply_filters( 'wauc_pre_update' , $this->Record["sidemenu"], 'sidemenu' );
 			update_option( $Record , $Update );
 			wp_redirect( esc_url_raw( add_query_arg( $this->MsgQ , 'update' , stripslashes( $_POST["_wp_http_referer"] ) ) ) );
 			exit;
@@ -1577,7 +1596,10 @@ class WP_Admin_UI_Customize
 				}
 			}
 
-			$Record = apply_filters( 'wauc_pre_update' , $this->Record["manage_metabox"] );
+			/**
+			 * Filter documented in WP_Admin_UI_Customize::update_site().
+			 */
+			$Record = apply_filters( 'wauc_pre_update' , $this->Record["manage_metabox"], 'manage_metabox' );
 			update_option( $Record , $Update );
 			wp_redirect( esc_url_raw( add_query_arg( $this->MsgQ , 'update' , stripslashes( $_POST["_wp_http_referer"] ) ) ) );
 			exit;
@@ -1597,7 +1619,10 @@ class WP_Admin_UI_Customize
 				}
 			}
 
-			$Record = apply_filters( 'wauc_pre_update' , $this->Record["post_add_edit"] );
+			/**
+			 * Filter documented in WP_Admin_UI_Customize::update_site().
+			 */
+			$Record = apply_filters( 'wauc_pre_update' , $this->Record["post_add_edit"], 'post_add_edit' );
 			update_option( $Record , $Update );
 			wp_redirect( esc_url_raw( add_query_arg( $this->MsgQ , 'update' , stripslashes( $_POST["_wp_http_referer"] ) ) ) );
 			exit;
@@ -1617,7 +1642,10 @@ class WP_Admin_UI_Customize
 				}
 			}
 
-			$Record = apply_filters( 'wauc_pre_update' , $this->Record["appearance_menus"] );
+			/**
+			 * Filter documented in WP_Admin_UI_Customize::update_site().
+			 */
+			$Record = apply_filters( 'wauc_pre_update' , $this->Record["appearance_menus"], 'appearance_menus' );
 			update_option( $Record , $Update );
 			wp_redirect( esc_url_raw( add_query_arg( $this->MsgQ , 'update' , stripslashes( $_POST["_wp_http_referer"] ) ) ) );
 			exit;
@@ -1637,7 +1665,10 @@ class WP_Admin_UI_Customize
 				}
 			}
 
-			$Record = apply_filters( 'wauc_pre_update' , $this->Record["loginscreen"] );
+			/**
+			 * Filter documented in WP_Admin_UI_Customize::update_site().
+			 */
+			$Record = apply_filters( 'wauc_pre_update' , $this->Record["loginscreen"], 'loginscreen' );
 			update_option( $Record , $Update );
 			wp_redirect( esc_url_raw( add_query_arg( $this->MsgQ , 'update' , stripslashes( $_POST["_wp_http_referer"] ) ) ) );
 			exit;
@@ -1654,7 +1685,10 @@ class WP_Admin_UI_Customize
 				$Update["edit_cap"] = strip_tags( $_POST["data"]["edit_cap"] );
 			}
 
-			$Record = apply_filters( 'wauc_pre_update' , $this->Record["plugin_cap"] );
+			/**
+			 * Filter documented in WP_Admin_UI_Customize::update_site().
+			 */
+			$Record = apply_filters( 'wauc_pre_update' , $this->Record["plugin_cap"], 'plugin_cap' );
 			update_option( $Record , $Update );
 			wp_redirect( esc_url_raw( add_query_arg( $this->MsgQ , 'update' , stripslashes( $_POST["_wp_http_referer"] ) ) ) );
 			exit;
