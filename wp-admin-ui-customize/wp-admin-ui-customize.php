@@ -416,7 +416,11 @@ class WP_Admin_UI_Customize
 		global $wp_admin_bar;
 
 		$this->Admin_bar = $wp_admin_bar->get_nodes();
-		
+
+		if ( ! isset( $this->OtherPluginMenu["admin_bar"] ) ) {
+			$this->OtherPluginMenu["admin_bar"] = array();
+		}
+
 		// Other plugin
 		if( !empty( $this->ActivatedPlugin ) ) {
 
@@ -461,14 +465,28 @@ class WP_Admin_UI_Customize
 					}
 				}
 			}
-			
-			if( !empty( $this->OtherPluginMenu["admin_bar"] ) ) {
-				for($i = 0; $i < 4; $i++) {
-					foreach( $this->OtherPluginMenu["admin_bar"] as $plugin_slug => $plugin_menu ) {
-						foreach( $this->Admin_bar as $node_id => $node ) {
-							if( !empty( $node->parent ) && array_key_exists( $node->parent , $plugin_menu ) ) {
-								$this->OtherPluginMenu["admin_bar"][$plugin_slug][$node_id] = 1;
-							}
+
+		}
+
+		/**
+		 * Change the default load for the admin bar other plugins.
+		 * @since  1.5.11
+		 * @param  array  $OtherPluginMenu  The other plugin node IDs.
+		 * @param  array  $Admin_bar        The admin bar nodes.
+		 * @return array
+		 */
+		$this->OtherPluginMenu["admin_bar"] = apply_filters(
+			'wauc_admin_bar_default_load_other_plugin_menu',
+			$this->OtherPluginMenu["admin_bar"],
+			$this->Admin_bar
+		);
+
+		if( !empty( $this->OtherPluginMenu["admin_bar"] ) ) {
+			for($i = 0; $i < 4; $i++) {
+				foreach( $this->OtherPluginMenu["admin_bar"] as $plugin_slug => $plugin_menu ) {
+					foreach( $this->Admin_bar as $node_id => $node ) {
+						if( !empty( $node->parent ) && array_key_exists( $node->parent , $plugin_menu ) ) {
+							$this->OtherPluginMenu["admin_bar"][$plugin_slug][$node_id] = 1;
 						}
 					}
 				}
@@ -959,7 +977,22 @@ class WP_Admin_UI_Customize
 										<?php endif; ?>
 									<?php endforeach; ?>
 								<?php endif; ?>
-								<?php if( $readonly_field ) : ?>
+								<?php
+									/**
+									 * Filter whether this menu widget title is readonly or not.
+									 * Has two filter options:
+									 * `wauc_admin_bar_menu_widget_title_readonly` for all.
+									 * `wauc_admin_bar_menu_widget_title_readonly_{ID}` for ID specific.
+									 *
+									 * @since  1.5.11
+									 * @param  bool   $readonly_field
+									 * @param  array  $menu_widget
+									 * @return bool
+									 */
+									$readonly_field = apply_filters( 'wauc_admin_bar_menu_widget_title_readonly', $readonly_field, $menu_widget );
+									$readonly_field = apply_filters( "wauc_admin_bar_menu_widget_title_readonly_{$menu_widget["id"]}", $readonly_field, $menu_widget );
+									if( $readonly_field ) :
+								?>
 									<input type="text" class="regular-text titletext" value="<?php echo esc_html( $menu_widget["title"] ); ?>" name="data[][title]" readonly="readonly" /><br />
 								<?php else : ?>
 									<input type="text" class="regular-text titletext" value="<?php echo esc_html( $menu_widget["title"] ); ?>" name="data[][title]" />
@@ -2196,10 +2229,11 @@ class WP_Admin_UI_Customize
 				/**
 				 * Change the adminbar nodes before they are added to WP admin bar.
 				 * @since  1.5.11
-				 * @param  array  $settingNodes
+				 * @param  array  $SettingNodes
+				 * @param  array  $All_Nodes
 				 * @return array
 				 */
-				$SettingNodes = apply_filters( 'wauc_admin_bar_menu_add_nodes', $SettingNodes );
+				$SettingNodes = apply_filters( 'wauc_admin_bar_menu_add_nodes', $SettingNodes, $All_Nodes );
 
 				// add main nodes
 				foreach($SettingNodes as $Boxtype => $allnodes) {
@@ -2241,6 +2275,13 @@ class WP_Admin_UI_Customize
 						}
 					}
 				}
+
+				/**
+				 * Add items to the admin bar after all WAUC nodes have been added.
+				 * @since  1.5.11
+				 * @param  WP_Admin_Bar  $wp_admin_bar
+				 */
+				do_action( 'wauc_admin_bar_menu_add_nodes_after', $wp_admin_bar );
 
 			}
 		}
