@@ -475,6 +475,14 @@ class WP_Admin_UI_Customize
 			}
 
 		}
+
+		/**
+		 * Change the default load for the admin bar.
+		 * @since  1.5.11
+		 * @param  array  $Admin_bar  The admin bar nodes.
+		 * @return array
+		 */
+		$this->Admin_bar = apply_filters( 'wauc_admin_bar_default_load', $this->Admin_bar );
 	}
 
 	// SetList
@@ -644,7 +652,15 @@ class WP_Admin_UI_Customize
 			}
 
 		}
-		
+
+		/**
+		 * Change the filtered load for the admin bar nodes.
+		 * @since  1.5.11
+		 * @param  array  $Filter_bar  The admin bar nodes.
+		 * @return array
+		 */
+		$Filter_bar = apply_filters( 'wauc_admin_bar_filter_load', $Filter_bar );
+
 		return $Filter_bar;
 	}
 
@@ -863,6 +879,15 @@ class WP_Admin_UI_Customize
 		if( !isset( $menu_widget["group"] ) ) $menu_widget["group"] = 0;
 		if( !isset( $menu_widget["meta"]["class"] ) ) $menu_widget["meta"]["class"] = "";
 		$no_submenu = array( 'search' , 'bp-notifications' , 'languages' , 'menu-toggle' , 'post_list' , 'page_list' , 'vaa' );
+
+		/**
+		 * Add items to the "no_submenu" array.
+		 * @since  1.5.11
+		 * @param  array
+		 * @return array
+		 */
+		$no_submenu = array_merge( apply_filters( 'wauc_admin_bar_menu_widget_no_submenu', array() ), $no_submenu );
+
 		$activated_plugin = $this->ActivatedPlugin;
 		$other_plugin = $this->OtherPluginMenu;
 
@@ -1011,6 +1036,15 @@ class WP_Admin_UI_Customize
 		$all_custom_posts = get_post_types( $args , 'objects' );
 		
 		$exclusion = array( "post" , "page" , "attachment" , "revision" , "nav_menu_item");
+
+		/**
+		 * Add items to the get_custom_posts "exclusion" array.
+		 * @since  1.5.11
+		 * @param  array
+		 * @return array
+		 */
+		$exclusion = array_merge( apply_filters( 'wauc_get_custom_posts_exclusion', array() ), $exclusion );
+
 		$custom_posts = array();
 		foreach($all_custom_posts as $post_type => $cpt) {
 			if( !in_array( $post_type , $exclusion ) ) {
@@ -1179,6 +1213,14 @@ class WP_Admin_UI_Customize
 				}
 				
 			}
+
+			/**
+			 * Apply custom shortcode replacements.
+			 * @since  1.5.11
+			 * @param  array  $str  The admin bar nodes.
+			 * @return array
+			 */
+			$str = apply_filters( 'wauc_val_replace_shortcode', $str );
 
 		}
 
@@ -2117,6 +2159,14 @@ class WP_Admin_UI_Customize
 					}
 				}
 
+				/**
+				 * Change the adminbar nodes before they are added to WP admin bar.
+				 * @since  1.5.11
+				 * @param  array  $settingNodes
+				 * @return array
+				 */
+				$SettingNodes = apply_filters( 'wauc_admin_bar_menu_add_nodes', $SettingNodes );
+
 				// add main nodes
 				foreach($SettingNodes as $Boxtype => $allnodes) {
 					foreach($allnodes as $node_type => $nodes) {
@@ -2544,7 +2594,23 @@ class WP_Admin_UI_Customize
 					
 				}
 				$submenu = $SetMain_submenu;
-				
+
+				/**
+				 * Change the main menu nodes before they are added.
+				 * @since  1.5.11
+				 * @param  array  $submenu
+				 * @return array
+				 */
+				$menu = apply_filters( 'wauc_sidemenu_menu', $menu );
+
+				/**
+				 * Change the main menu submenu nodes before they are added.
+				 * @since  1.5.11
+				 * @param  array  $submenu
+				 * @return array
+				 */
+				$submenu = apply_filters( 'wauc_sidemenu_submenu', $submenu );
+
 			} else {
 				// empty menu
 				$menu = array();
