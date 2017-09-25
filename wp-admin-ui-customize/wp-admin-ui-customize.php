@@ -207,11 +207,7 @@ class WP_Admin_UI_Customize
 		if( is_plugin_active( 'polylang/polylang.php' ) ) {
 			$this->ActivatedPlugin["polylang"] = true;
 		}
-		
-		if( is_plugin_active( 'view-admin-as/view-admin-as.php' ) ) {
-			$this->ActivatedPlugin["view_admin_as"] = true;
-		}
-		
+
 	}
 
 
@@ -456,15 +452,6 @@ class WP_Admin_UI_Customize
 					}
 				}
 			}
-			
-			if( !empty( $this->ActivatedPlugin["view_admin_as"] ) ) {
-				$plugin_slug = 'vaa';
-				foreach( $this->Admin_bar as $node_id => $node ) {
-					if( strstr( $node_id , $plugin_slug ) ) {
-						$this->OtherPluginMenu["admin_bar"]['view_admin_as'][$node_id] = 1;
-					}
-				}
-			}
 
 		}
 
@@ -653,18 +640,6 @@ class WP_Admin_UI_Customize
 				foreach( $Filter_bar['left']['sub'] as $node_id => $node ) {
 					if( strstr( $node->parent , $plugin_slug ) ) {
 						unset( $Filter_bar['left']['sub'][$node_id] );
-					}
-				}
-			}
-
-			if( !empty( $this->ActivatedPlugin["view_admin_as"] ) ) {
-				$plugin_slug = 'vaa';
-				$sub_arrs = array( 'sub2' , 'sub3' , 'sub4' );
-				foreach( $sub_arrs as $sub_arr ) {
-					foreach( $Filter_bar['right'][ $sub_arr ] as $node_id => $node ) {
-						if( strstr( $node->parent , $plugin_slug ) !== false ) {
-							unset( $Filter_bar['right'][ $sub_arr ][$node_id] );
-						}
 					}
 				}
 			}
@@ -2150,67 +2125,6 @@ class WP_Admin_UI_Customize
 											}
 											if( !empty( $subnode_type ) ) {
 												$SettingNodes[$Boxtype][$subnode_type][] = (array) $default_node;
-											}
-										}
-									}
-								} elseif( $node["id"] == 'vaa' ) {
-									$default_sub2_node_ids = array();
-									$default_sub3_node_ids = array();
-									foreach($All_Nodes as $default_node_id => $default_node) {
-										if( $default_node->parent == $node["id"] ) {
-											$subnode_type = '';
-											if( $node_type == 'main' ) {
-												$subnode_type = 'sub';
-											} elseif( $node_type == 'sub' ) {
-												 $subnode_type = 'sub2';
-											} elseif( $node_type == 'sub2' ) {
-												$subnode_type = 'sub3';
-											} elseif( $node_type == 'sub3' ) {
-												$subnode_type = 'sub4';
-											}
-											if( !empty( $subnode_type ) ) {
-												$SettingNodes[$Boxtype][$subnode_type][] = (array) $default_node;
-											}
-											$default_sub2_node_ids[] = $default_node->id;
-										}
-									}
-									if( !empty( $default_sub2_node_ids ) ) {
-										foreach($All_Nodes as $default_node_id => $default_node) {
-											if( in_array( $default_node->parent , $default_sub2_node_ids ) ) {
-												$subnode_type = '';
-												if( $node_type == 'main' ) {
-													$subnode_type = 'sub';
-												} elseif( $node_type == 'sub' ) {
-													 $subnode_type = 'sub2';
-												} elseif( $node_type == 'sub2' ) {
-													$subnode_type = 'sub3';
-												} elseif( $node_type == 'sub3' ) {
-													$subnode_type = 'sub4';
-												}
-												if( !empty( $subnode_type ) ) {
-													$SettingNodes[$Boxtype][$subnode_type][] = (array) $default_node;
-												}
-												$default_sub3_node_ids[] = $default_node->id;
-											}
-										}
-									}
-									if( !empty( $default_sub3_node_ids ) ) {
-										foreach($All_Nodes as $default_node_id => $default_node) {
-											if( in_array( $default_node->parent , $default_sub3_node_ids ) ) {
-												$subnode_type = '';
-												if( $node_type == 'main' ) {
-													$subnode_type = 'sub';
-												} elseif( $node_type == 'sub' ) {
-													 $subnode_type = 'sub2';
-												} elseif( $node_type == 'sub2' ) {
-													$subnode_type = 'sub3';
-												} elseif( $node_type == 'sub3' ) {
-													$subnode_type = 'sub4';
-												}
-												if( !empty( $subnode_type ) ) {
-													$SettingNodes[$Boxtype][$subnode_type][] = (array) $default_node;
-												}
-												$default_sub3_node_ids[] = $default_node->id;
 											}
 										}
 									}
