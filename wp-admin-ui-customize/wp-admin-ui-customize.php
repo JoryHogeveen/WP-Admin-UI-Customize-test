@@ -207,11 +207,7 @@ class WP_Admin_UI_Customize
 		if( is_plugin_active( 'polylang/polylang.php' ) ) {
 			$this->ActivatedPlugin["polylang"] = true;
 		}
-		
-		if( is_plugin_active( 'view-admin-as/view-admin-as.php' ) ) {
-			$this->ActivatedPlugin["view_admin_as"] = true;
-		}
-		
+
 	}
 
 
@@ -416,7 +412,11 @@ class WP_Admin_UI_Customize
 		global $wp_admin_bar;
 
 		$this->Admin_bar = $wp_admin_bar->get_nodes();
-		
+
+		if ( ! isset( $this->OtherPluginMenu["admin_bar"] ) ) {
+			$this->OtherPluginMenu["admin_bar"] = array();
+		}
+
 		// Other plugin
 		if( !empty( $this->ActivatedPlugin ) ) {
 
@@ -452,29 +452,42 @@ class WP_Admin_UI_Customize
 					}
 				}
 			}
-			
-			if( !empty( $this->ActivatedPlugin["view_admin_as"] ) ) {
-				$plugin_slug = 'vaa';
-				foreach( $this->Admin_bar as $node_id => $node ) {
-					if( strstr( $node_id , $plugin_slug ) ) {
-						$this->OtherPluginMenu["admin_bar"]['view_admin_as'][$node_id] = 1;
-					}
-				}
-			}
-			
-			if( !empty( $this->OtherPluginMenu["admin_bar"] ) ) {
-				for($i = 0; $i < 4; $i++) {
-					foreach( $this->OtherPluginMenu["admin_bar"] as $plugin_slug => $plugin_menu ) {
-						foreach( $this->Admin_bar as $node_id => $node ) {
-							if( !empty( $node->parent ) && array_key_exists( $node->parent , $plugin_menu ) ) {
-								$this->OtherPluginMenu["admin_bar"][$plugin_slug][$node_id] = 1;
-							}
+
+		}
+
+		/**
+		 * Change the default load for the admin bar other plugins.
+		 * @since  1.5.11
+		 * @param  array  $OtherPluginMenu  The other plugin node IDs.
+		 * @param  array  $Admin_bar        The admin bar nodes.
+		 * @return array
+		 */
+		$this->OtherPluginMenu["admin_bar"] = apply_filters(
+			'wauc_admin_bar_default_load_other_plugin_menu',
+			$this->OtherPluginMenu["admin_bar"],
+			$this->Admin_bar
+		);
+
+		if( !empty( $this->OtherPluginMenu["admin_bar"] ) ) {
+			for($i = 0; $i < 4; $i++) {
+				foreach( $this->OtherPluginMenu["admin_bar"] as $plugin_slug => $plugin_menu ) {
+					foreach( $this->Admin_bar as $node_id => $node ) {
+						if( !empty( $node->parent ) && array_key_exists( $node->parent , $plugin_menu ) ) {
+							$this->OtherPluginMenu["admin_bar"][$plugin_slug][$node_id] = 1;
 						}
 					}
 				}
 			}
 
 		}
+
+		/**
+		 * Change the default load for the admin bar.
+		 * @since  1.5.11
+		 * @param  array  $Admin_bar  The admin bar nodes.
+		 * @return array
+		 */
+		$this->Admin_bar = apply_filters( 'wauc_admin_bar_default_load', $this->Admin_bar );
 	}
 
 	// SetList
@@ -631,20 +644,16 @@ class WP_Admin_UI_Customize
 				}
 			}
 
-			if( !empty( $this->ActivatedPlugin["view_admin_as"] ) ) {
-				$plugin_slug = 'vaa';
-				$sub_arrs = array( 'sub2' , 'sub3' , 'sub4' );
-				foreach( $sub_arrs as $sub_arr ) {
-					foreach( $Filter_bar['right'][ $sub_arr ] as $node_id => $node ) {
-						if( strstr( $node->parent , $plugin_slug ) !== false ) {
-							unset( $Filter_bar['right'][ $sub_arr ][$node_id] );
-						}
-					}
-				}
-			}
-
 		}
-		
+
+		/**
+		 * Change the filtered load for the admin bar nodes.
+		 * @since  1.5.11
+		 * @param  array  $Filter_bar  The admin bar nodes.
+		 * @return array
+		 */
+		$Filter_bar = apply_filters( 'wauc_admin_bar_filter_load', $Filter_bar );
+
 		return $Filter_bar;
 	}
 
@@ -862,7 +871,16 @@ class WP_Admin_UI_Customize
 		if ( is_object( $menu_widget ) ) $menu_widget = (array) $menu_widget;
 		if( !isset( $menu_widget["group"] ) ) $menu_widget["group"] = 0;
 		if( !isset( $menu_widget["meta"]["class"] ) ) $menu_widget["meta"]["class"] = "";
-		$no_submenu = array( 'search' , 'bp-notifications' , 'languages' , 'menu-toggle' , 'post_list' , 'page_list' , 'vaa' );
+		$no_submenu = array( 'search' , 'bp-notifications' , 'languages' , 'menu-toggle' , 'post_list' , 'page_list' );
+
+		/**
+		 * Add items to the "no_submenu" array.
+		 * @since  1.5.11
+		 * @param  array
+		 * @return array
+		 */
+		$no_submenu = array_merge( apply_filters( 'wauc_admin_bar_menu_widget_no_submenu', array() ), $no_submenu );
+
 		$activated_plugin = $this->ActivatedPlugin;
 		$other_plugin = $this->OtherPluginMenu;
 
@@ -934,7 +952,22 @@ class WP_Admin_UI_Customize
 										<?php endif; ?>
 									<?php endforeach; ?>
 								<?php endif; ?>
-								<?php if( $readonly_field ) : ?>
+								<?php
+									/**
+									 * Filter whether this menu widget title is readonly or not.
+									 * Has two filter options:
+									 * `wauc_admin_bar_menu_widget_title_readonly` for all.
+									 * `wauc_admin_bar_menu_widget_title_readonly_{ID}` for ID specific.
+									 *
+									 * @since  1.5.11
+									 * @param  bool   $readonly_field
+									 * @param  array  $menu_widget
+									 * @return bool
+									 */
+									$readonly_field = apply_filters( 'wauc_admin_bar_menu_widget_title_readonly', $readonly_field, $menu_widget );
+									$readonly_field = apply_filters( "wauc_admin_bar_menu_widget_title_readonly_{$menu_widget["id"]}", $readonly_field, $menu_widget );
+									if( $readonly_field ) :
+								?>
 									<input type="text" class="regular-text titletext" value="<?php echo esc_html( $menu_widget["title"] ); ?>" name="data[][title]" readonly="readonly" /><br />
 								<?php else : ?>
 									<input type="text" class="regular-text titletext" value="<?php echo esc_html( $menu_widget["title"] ); ?>" name="data[][title]" />
@@ -1011,6 +1044,15 @@ class WP_Admin_UI_Customize
 		$all_custom_posts = get_post_types( $args , 'objects' );
 		
 		$exclusion = array( "post" , "page" , "attachment" , "revision" , "nav_menu_item");
+
+		/**
+		 * Add items to the get_custom_posts "exclusion" array.
+		 * @since  1.5.11
+		 * @param  array
+		 * @return array
+		 */
+		$exclusion = array_merge( apply_filters( 'wauc_get_custom_posts_exclusion', array() ), $exclusion );
+
 		$custom_posts = array();
 		foreach($all_custom_posts as $post_type => $cpt) {
 			if( !in_array( $post_type , $exclusion ) ) {
@@ -1179,6 +1221,14 @@ class WP_Admin_UI_Customize
 				}
 				
 			}
+
+			/**
+			 * Apply custom shortcode replacements.
+			 * @since  1.5.11
+			 * @param  array  $str  The admin bar nodes.
+			 * @return array
+			 */
+			$str = apply_filters( 'wauc_val_replace_shortcode', $str );
 
 		}
 
@@ -1385,7 +1435,14 @@ class WP_Admin_UI_Customize
 				}
 			}
 
-			$Record = apply_filters( 'wauc_pre_update' , $this->Record["site"] );
+			/**
+			 * Change the update data.
+			 * @since  1.5.11  Added second context parameter.
+			 * @param  mixed   $record   Update data.
+			 * @param  string  $context  The data name of what is being updated.
+			 * @return mixed
+			 */
+			$Record = apply_filters( 'wauc_pre_update' , $this->Record["site"], 'site' );
 			update_option( $Record , $Update );
 			wp_redirect( esc_url_raw( add_query_arg( $this->MsgQ , 'update' , stripslashes( $_POST["_wp_http_referer"] ) ) ) );
 			exit;
@@ -1405,7 +1462,10 @@ class WP_Admin_UI_Customize
 				}
 			}
 
-			$Record = apply_filters( 'wauc_pre_update' , $this->Record["admin_general"] );
+			/**
+			 * Filter documented in WP_Admin_UI_Customize::update_site().
+			 */
+			$Record = apply_filters( 'wauc_pre_update' , $this->Record["admin_general"], 'admin_general' );
 			update_option( $Record , $Update );
 			wp_redirect( esc_url_raw( add_query_arg( $this->MsgQ , 'update' , stripslashes( $_POST["_wp_http_referer"] ) ) ) );
 			exit;
@@ -1425,7 +1485,10 @@ class WP_Admin_UI_Customize
 				}
 			}
 
-			$Record = apply_filters( 'wauc_pre_update' , $this->Record["dashboard"] );
+			/**
+			 * Filter documented in WP_Admin_UI_Customize::update_site().
+			 */
+			$Record = apply_filters( 'wauc_pre_update' , $this->Record["dashboard"], 'dashboard' );
 			update_option( $Record , $Update );
 			wp_redirect( esc_url_raw( add_query_arg( $this->MsgQ , 'update' , stripslashes( $_POST["_wp_http_referer"] ) ) ) );
 			exit;
@@ -1480,7 +1543,10 @@ class WP_Admin_UI_Customize
 				}
 			}
 
-			$Record = apply_filters( 'wauc_pre_update' , $this->Record["admin_bar_menu"] );
+			/**
+			 * Filter documented in WP_Admin_UI_Customize::update_site().
+			 */
+			$Record = apply_filters( 'wauc_pre_update' , $this->Record["admin_bar_menu"], 'admin_bar_menu' );
 			update_option( $Record , $Update );
 			wp_redirect( esc_url_raw( add_query_arg( $this->MsgQ , 'update' , stripslashes( $_POST["_wp_http_referer"] ) ) ) );
 			exit;
@@ -1510,7 +1576,10 @@ class WP_Admin_UI_Customize
 				}
 			}
 
-			$Record = apply_filters( 'wauc_pre_update' , $this->Record["sidemenu"] );
+			/**
+			 * Filter documented in WP_Admin_UI_Customize::update_site().
+			 */
+			$Record = apply_filters( 'wauc_pre_update' , $this->Record["sidemenu"], 'sidemenu' );
 			update_option( $Record , $Update );
 			wp_redirect( esc_url_raw( add_query_arg( $this->MsgQ , 'update' , stripslashes( $_POST["_wp_http_referer"] ) ) ) );
 			exit;
@@ -1535,7 +1604,10 @@ class WP_Admin_UI_Customize
 				}
 			}
 
-			$Record = apply_filters( 'wauc_pre_update' , $this->Record["manage_metabox"] );
+			/**
+			 * Filter documented in WP_Admin_UI_Customize::update_site().
+			 */
+			$Record = apply_filters( 'wauc_pre_update' , $this->Record["manage_metabox"], 'manage_metabox' );
 			update_option( $Record , $Update );
 			wp_redirect( esc_url_raw( add_query_arg( $this->MsgQ , 'update' , stripslashes( $_POST["_wp_http_referer"] ) ) ) );
 			exit;
@@ -1555,7 +1627,10 @@ class WP_Admin_UI_Customize
 				}
 			}
 
-			$Record = apply_filters( 'wauc_pre_update' , $this->Record["post_add_edit"] );
+			/**
+			 * Filter documented in WP_Admin_UI_Customize::update_site().
+			 */
+			$Record = apply_filters( 'wauc_pre_update' , $this->Record["post_add_edit"], 'post_add_edit' );
 			update_option( $Record , $Update );
 			wp_redirect( esc_url_raw( add_query_arg( $this->MsgQ , 'update' , stripslashes( $_POST["_wp_http_referer"] ) ) ) );
 			exit;
@@ -1575,7 +1650,10 @@ class WP_Admin_UI_Customize
 				}
 			}
 
-			$Record = apply_filters( 'wauc_pre_update' , $this->Record["appearance_menus"] );
+			/**
+			 * Filter documented in WP_Admin_UI_Customize::update_site().
+			 */
+			$Record = apply_filters( 'wauc_pre_update' , $this->Record["appearance_menus"], 'appearance_menus' );
 			update_option( $Record , $Update );
 			wp_redirect( esc_url_raw( add_query_arg( $this->MsgQ , 'update' , stripslashes( $_POST["_wp_http_referer"] ) ) ) );
 			exit;
@@ -1595,7 +1673,10 @@ class WP_Admin_UI_Customize
 				}
 			}
 
-			$Record = apply_filters( 'wauc_pre_update' , $this->Record["loginscreen"] );
+			/**
+			 * Filter documented in WP_Admin_UI_Customize::update_site().
+			 */
+			$Record = apply_filters( 'wauc_pre_update' , $this->Record["loginscreen"], 'loginscreen' );
 			update_option( $Record , $Update );
 			wp_redirect( esc_url_raw( add_query_arg( $this->MsgQ , 'update' , stripslashes( $_POST["_wp_http_referer"] ) ) ) );
 			exit;
@@ -1612,7 +1693,10 @@ class WP_Admin_UI_Customize
 				$Update["edit_cap"] = strip_tags( $_POST["data"]["edit_cap"] );
 			}
 
-			$Record = apply_filters( 'wauc_pre_update' , $this->Record["plugin_cap"] );
+			/**
+			 * Filter documented in WP_Admin_UI_Customize::update_site().
+			 */
+			$Record = apply_filters( 'wauc_pre_update' , $this->Record["plugin_cap"], 'plugin_cap' );
 			update_option( $Record , $Update );
 			wp_redirect( esc_url_raw( add_query_arg( $this->MsgQ , 'update' , stripslashes( $_POST["_wp_http_referer"] ) ) ) );
 			exit;
@@ -2044,67 +2128,6 @@ class WP_Admin_UI_Customize
 											}
 										}
 									}
-								} elseif( $node["id"] == 'vaa' ) {
-									$default_sub2_node_ids = array();
-									$default_sub3_node_ids = array();
-									foreach($All_Nodes as $default_node_id => $default_node) {
-										if( $default_node->parent == $node["id"] ) {
-											$subnode_type = '';
-											if( $node_type == 'main' ) {
-												$subnode_type = 'sub';
-											} elseif( $node_type == 'sub' ) {
-												 $subnode_type = 'sub2';
-											} elseif( $node_type == 'sub2' ) {
-												$subnode_type = 'sub3';
-											} elseif( $node_type == 'sub3' ) {
-												$subnode_type = 'sub4';
-											}
-											if( !empty( $subnode_type ) ) {
-												$SettingNodes[$Boxtype][$subnode_type][] = (array) $default_node;
-											}
-											$default_sub2_node_ids[] = $default_node->id;
-										}
-									}
-									if( !empty( $default_sub2_node_ids ) ) {
-										foreach($All_Nodes as $default_node_id => $default_node) {
-											if( in_array( $default_node->parent , $default_sub2_node_ids ) ) {
-												$subnode_type = '';
-												if( $node_type == 'main' ) {
-													$subnode_type = 'sub';
-												} elseif( $node_type == 'sub' ) {
-													 $subnode_type = 'sub2';
-												} elseif( $node_type == 'sub2' ) {
-													$subnode_type = 'sub3';
-												} elseif( $node_type == 'sub3' ) {
-													$subnode_type = 'sub4';
-												}
-												if( !empty( $subnode_type ) ) {
-													$SettingNodes[$Boxtype][$subnode_type][] = (array) $default_node;
-												}
-												$default_sub3_node_ids[] = $default_node->id;
-											}
-										}
-									}
-									if( !empty( $default_sub3_node_ids ) ) {
-										foreach($All_Nodes as $default_node_id => $default_node) {
-											if( in_array( $default_node->parent , $default_sub3_node_ids ) ) {
-												$subnode_type = '';
-												if( $node_type == 'main' ) {
-													$subnode_type = 'sub';
-												} elseif( $node_type == 'sub' ) {
-													 $subnode_type = 'sub2';
-												} elseif( $node_type == 'sub2' ) {
-													$subnode_type = 'sub3';
-												} elseif( $node_type == 'sub3' ) {
-													$subnode_type = 'sub4';
-												}
-												if( !empty( $subnode_type ) ) {
-													$SettingNodes[$Boxtype][$subnode_type][] = (array) $default_node;
-												}
-												$default_sub3_node_ids[] = $default_node->id;
-											}
-										}
-									}
 								}
 								foreach( $activated_plugin as $plugin_slug => $v ) {
 									if( !empty( $other_plugin["admin_bar"][$plugin_slug] ) && array_key_exists( $node["id"] , $other_plugin["admin_bar"][$plugin_slug] ) ) {
@@ -2116,6 +2139,15 @@ class WP_Admin_UI_Customize
 						}
 					}
 				}
+
+				/**
+				 * Change the adminbar nodes before they are added to WP admin bar.
+				 * @since  1.5.11
+				 * @param  array  $SettingNodes
+				 * @param  array  $All_Nodes
+				 * @return array
+				 */
+				$SettingNodes = apply_filters( 'wauc_admin_bar_menu_add_nodes', $SettingNodes, $All_Nodes );
 
 				// add main nodes
 				foreach($SettingNodes as $Boxtype => $allnodes) {
@@ -2157,6 +2189,13 @@ class WP_Admin_UI_Customize
 						}
 					}
 				}
+
+				/**
+				 * Add items to the admin bar after all WAUC nodes have been added.
+				 * @since  1.5.11
+				 * @param  WP_Admin_Bar  $wp_admin_bar
+				 */
+				do_action( 'wauc_admin_bar_menu_add_nodes_after', $wp_admin_bar );
 
 			}
 		}
@@ -2544,7 +2583,23 @@ class WP_Admin_UI_Customize
 					
 				}
 				$submenu = $SetMain_submenu;
-				
+
+				/**
+				 * Change the main menu nodes before they are added.
+				 * @since  1.5.11
+				 * @param  array  $submenu
+				 * @return array
+				 */
+				$menu = apply_filters( 'wauc_sidemenu_menu', $menu );
+
+				/**
+				 * Change the main menu submenu nodes before they are added.
+				 * @since  1.5.11
+				 * @param  array  $submenu
+				 * @return array
+				 */
+				$submenu = apply_filters( 'wauc_sidemenu_submenu', $submenu );
+
 			} else {
 				// empty menu
 				$menu = array();
