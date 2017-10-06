@@ -977,7 +977,25 @@ class WP_Admin_UI_Customize
 					</p>
 					<p class="field-meta description">
 						<label class="description">
-							<?php if( !empty( $menu_widget["group"] ) or $menu_widget["id"] == 'menu-toggle' ) : ?>
+							<?php
+								$disable_target = ( !empty( $menu_widget["group"] ) or $menu_widget["id"] == 'menu-toggle' );
+
+								/**
+								 * Filter whether this menu widget has a link target option.
+								 * Has two filter options:
+								 * `wauc_admin_bar_menu_widget_disable_target` for all.
+								 * `wauc_admin_bar_menu_widget_disable_target_{ID}` for ID specific.
+								 *
+								 * @since  1.5.12
+								 * @param  bool   $disable_target
+								 * @param  array  $menu_widget
+								 * @return bool
+								 */
+								$disable_target = apply_filters( 'wauc_admin_bar_menu_widget_disable_target', $disable_target, $menu_widget );
+								$disable_target = apply_filters( "wauc_admin_bar_menu_widget_disable_target_{$menu_widget["id"]}", $disable_target, $menu_widget );
+
+								if( $disable_target ) :
+							?>
 								<input type="hidden" class="meta_target" value="_blank" name="data[][meta][target]" />
 							<?php else: ?>
 								<?php $checked = ""; ?>
